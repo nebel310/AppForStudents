@@ -5,9 +5,9 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import jwt, JWTError
 from datetime import datetime, timedelta, timezone
 from database import new_session
-from models.auth import BlacklistedTokenOrm, UserOrm
+from models.users import BlacklistedTokenOrm, UserOrm
 from sqlalchemy import select, delete
-from repositories.auth import UserRepository
+from repositories.users import UserRepository
 from passlib.context import CryptContext
 
 

@@ -4,11 +4,9 @@ from fastapi.openapi.utils import get_openapi
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from database import create_tables, delete_tables
-from router.auth import router as auth_router
-
-from fastapi import APIRouter
-from repositories.auth import UserRepository
-from schemas.auth import SUserRegister
+from router.users import router as users_router
+from repositories.users import UserRepository
+from schemas.users import SUserRegister
 
 
 
@@ -19,6 +17,14 @@ async def lifespan(app: FastAPI):
     print('База очищена')
     await create_tables()
     print('База готова к работе')
+    
+    # Инициализируем базовые интересы и навыки
+    try:
+        await UserRepository.init_interests_and_skills()
+        print('Базовые интересы и навыки добавлены')
+    except Exception as e:
+        print(f'Ошибка при инициализации интересов и навыков: {e}')
+    
     yield
     print('Выключение')
 
@@ -41,9 +47,12 @@ def custom_openapi():
     }
     
     secured_paths = {
-        #Авторизация
+        # Авторизация
         "/auth/me": {"method": "get", "security": [{"Bearer": []}]},
         "/auth/logout": {"method": "post", "security": [{"Bearer": []}]},
+        "/auth/role": {"method": "patch", "security": [{"Bearer": []}]},
+        "/auth/interests": {"method": "post", "security": [{"Bearer": []}]},
+        "/auth/skills": {"method": "post", "security": [{"Bearer": []}]},
     }
     
     for path, config in secured_paths.items():
@@ -56,7 +65,7 @@ def custom_openapi():
 
 app = FastAPI(lifespan=lifespan)
 app.openapi = custom_openapi
-app.include_router(auth_router)
+app.include_router(users_router)
 
 
 app.add_middleware(
@@ -66,36 +75,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-init_router = APIRouter()
-
-@init_router.post("/init-test-data")
-async def init_test_data():
-    test_users = [
-        {
-            "username": "string",
-            "email": "user@example.com", 
-            "password": "string",
-            "password_confirm": "string"
-        },
-        {
-            "username": "admin",
-            "email": "admin@admin.com",
-            "password": "admin",
-            "password_confirm": "admin"
-        }
-    ]
-    
-    for user in test_users:
-        # Преобразуем словарь в SUserRegister
-        user_data = SUserRegister(**user)
-        await UserRepository.register_user(user_data)
-    
-    return {"message": "Тестовые данные созданы"}
-
-app.include_router(init_router)
-
 
 
 #Раскоментить, когда будешь писать докер.
