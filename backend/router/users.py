@@ -97,7 +97,7 @@ async def get_current_user_info(current_user: UserOrm = Depends(get_current_user
         raise HTTPException(status_code=500, detail="Внутренняя ошибка сервера")
 
 
-@router.patch("/update_me", response_model=dict)
+@router.patch("/update_me", response_model=dict)  # Изменили с /me на /update_me
 async def update_user_profile(update_data: SUserUpdate, current_user: UserOrm = Depends(get_current_user)):
     try:
         user = await UserRepository.update_user_profile(current_user.id, update_data)

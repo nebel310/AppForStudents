@@ -6,8 +6,10 @@ from contextlib import asynccontextmanager
 from database import create_tables, delete_tables
 from router.users import router as users_router
 from router.content import router as content_router
+from router.club import router as club_router
 from repositories.users import UserRepository
 from repositories.content import ContentRepository
+from repositories.club import ClubRepository
 from schemas.users import SUserRegister
 
 
@@ -33,6 +35,13 @@ async def lifespan(app: FastAPI):
         print('Тестовый контент добавлен')
     except Exception as e:
         print(f'Ошибка при инициализации тестового контента: {e}')
+    
+    # Инициализируем тестовые клубы
+    try:
+        await ClubRepository.init_test_clubs()
+        print('Тестовые клубы добавлены')
+    except Exception as e:
+        print(f'Ошибка при инициализации тестовых клубов: {e}')
     
     yield
     print('Выключение')
@@ -67,6 +76,10 @@ def custom_openapi():
         "/news/{news_id}/like": {"method": "post", "security": [{"Bearer": []}]},
         "/cases/{case_id}/participate": {"method": "post", "security": [{"Bearer": []}]},
         "/vacancies/{vacancy_id}/apply": {"method": "post", "security": [{"Bearer": []}]},
+        # Клубы
+        "/clubs": {"method": "post", "security": [{"Bearer": []}]},
+        "/clubs/{club_id}/join": {"method": "post", "security": [{"Bearer": []}]},
+        "/clubs/{club_id}/leave": {"method": "post", "security": [{"Bearer": []}]},
     }
     
     for path, config in secured_paths.items():
@@ -81,6 +94,7 @@ app = FastAPI(lifespan=lifespan)
 app.openapi = custom_openapi
 app.include_router(users_router)
 app.include_router(content_router)
+app.include_router(club_router)
 
 
 app.add_middleware(

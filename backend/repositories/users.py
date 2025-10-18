@@ -3,12 +3,14 @@ import random
 from dotenv import load_dotenv
 from database import new_session
 from models.users import UserOrm, RefreshTokenOrm, BlacklistedTokenOrm, InterestOrm, SkillOrm, UserInterestOrm, UserSkillOrm, UserAchievementOrm
+from models.content import CaseOrm, CaseParticipantOrm
 from schemas.users import SUserRegister, SUserRoleUpdate, SUserInterestsUpdate, SUserSkillsUpdate, SUserUpdate
 from sqlalchemy import select, delete, insert, update
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from passlib.context import CryptContext
 from jose import jwt, JWTError
 from datetime import datetime, timezone, timedelta
+from repositories.club import ClubRepository
 
 
 
@@ -133,11 +135,18 @@ class UserRepository:
                 achievements_result = await session.execute(achievements_query)
                 achievements = [row[0] for row in achievements_result.all()]
                 
-                # Кейсы пользователя (заглушка - будем реализовывать позже)
-                cases = ["Разработка мобильного приложения", "Оптимизация веб-сайта"]
+                # Кейсы пользователя (получаем реальные данные)
+                cases_query = (
+                    select(CaseOrm.title)
+                    .join(CaseParticipantOrm, CaseParticipantOrm.case_id == CaseOrm.id)
+                    .where(CaseParticipantOrm.user_id == user_id)
+                )
+                cases_result = await session.execute(cases_query)
+                cases = [row[0] for row in cases_result.all()]
                 
-                # Клубы пользователя (заглушка - будем реализовывать позже)
-                clubs = ["Клуб разработчиков Python", "Сообщество веб-дизайнеров"]
+                # Клубы пользователя (получаем реальные данные)
+                user_clubs = await ClubRepository.get_user_clubs(user_id)
+                clubs = [club.title for club in user_clubs]
                 
                 return {
                     "user": user,
