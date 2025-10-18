@@ -1,9 +1,10 @@
 import os
+import random
 from dotenv import load_dotenv
 from database import new_session
-from models.users import UserOrm, RefreshTokenOrm, BlacklistedTokenOrm, InterestOrm, SkillOrm, UserInterestOrm, UserSkillOrm
-from schemas.users import SUserRegister, SUserRoleUpdate, SUserInterestsUpdate, SUserSkillsUpdate
-from sqlalchemy import select, delete, insert
+from models.users import UserOrm, RefreshTokenOrm, BlacklistedTokenOrm, InterestOrm, SkillOrm, UserInterestOrm, UserSkillOrm, UserAchievementOrm
+from schemas.users import SUserRegister, SUserRoleUpdate, SUserInterestsUpdate, SUserSkillsUpdate, SUserUpdate
+from sqlalchemy import select, delete, insert, update
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from passlib.context import CryptContext
 from jose import jwt, JWTError
@@ -29,6 +30,9 @@ class UserRepository:
                 result = await session.execute(query)
                 if result.scalars().first():
                     raise ValueError("Пользователь с таким email уже существует")
+                
+                # Генерируем случайный рейтинг от 3.0 до 5.0
+                rating = round(random.uniform(3.0, 5.0), 1)
                   
                 hashed_password = pwd_context.hash(user_data.password)
                 
@@ -36,10 +40,25 @@ class UserRepository:
                     username=user_data.username,
                     email=user_data.email,
                     hashed_password=hashed_password,
-                    role='student'
+                    role='student',
+                    rating=rating
                 )
                 session.add(user)
                 await session.flush()
+                
+                # Добавляем базовые достижения
+                achievements = [
+                    "Новый участник платформы",
+                    "Активный студент"
+                ]
+                
+                for achievement in achievements:
+                    user_achievement = UserAchievementOrm(
+                        user_id=user.id,
+                        achievement=achievement
+                    )
+                    session.add(user_achievement)
+                
                 await session.commit()
                 return user.id
             except IntegrityError as e:
@@ -83,6 +102,78 @@ class UserRepository:
                 return result.scalars().first()
             except SQLAlchemyError as e:
                 raise ValueError("Ошибка базы данных при поиске пользователя") from e
+    
+    @classmethod
+    async def get_user_profile_data(cls, user_id: int) -> dict:
+        """Получение расширенных данных профиля пользователя"""
+        async with new_session() as session:
+            try:
+                # Основные данные пользователя
+                user_query = select(UserOrm).where(UserOrm.id == user_id)
+                user_result = await session.execute(user_query)
+                user = user_result.scalars().first()
+                
+                if not user:
+                    raise ValueError("Пользователь не найден")
+                
+                # Навыки пользователя
+                skills_query = (
+                    select(SkillOrm.name)
+                    .join(UserSkillOrm, UserSkillOrm.skill_id == SkillOrm.id)
+                    .where(UserSkillOrm.user_id == user_id)
+                )
+                skills_result = await session.execute(skills_query)
+                skills = [row[0] for row in skills_result.all()]
+                
+                # Достижения пользователя
+                achievements_query = (
+                    select(UserAchievementOrm.achievement)
+                    .where(UserAchievementOrm.user_id == user_id)
+                )
+                achievements_result = await session.execute(achievements_query)
+                achievements = [row[0] for row in achievements_result.all()]
+                
+                # Кейсы пользователя (заглушка - будем реализовывать позже)
+                cases = ["Разработка мобильного приложения", "Оптимизация веб-сайта"]
+                
+                # Клубы пользователя (заглушка - будем реализовывать позже)
+                clubs = ["Клуб разработчиков Python", "Сообщество веб-дизайнеров"]
+                
+                return {
+                    "user": user,
+                    "skills": skills,
+                    "achievements": achievements,
+                    "cases": cases,
+                    "clubs": clubs
+                }
+            except SQLAlchemyError as e:
+                raise ValueError("Ошибка базы данных при получении профиля") from e
+    
+    @classmethod
+    async def update_user_profile(cls, user_id: int, update_data: SUserUpdate) -> UserOrm:
+        async with new_session() as session:
+            try:
+                query = select(UserOrm).where(UserOrm.id == user_id)
+                result = await session.execute(query)
+                user = result.scalars().first()
+                
+                if not user:
+                    raise ValueError("Пользователь не найден")
+                
+                # Обновляем только переданные поля
+                if update_data.username is not None:
+                    user.username = update_data.username
+                if update_data.avatar_url is not None:
+                    user.avatar_url = update_data.avatar_url
+                
+                await session.commit()
+                return user
+            except IntegrityError as e:
+                await session.rollback()
+                raise ValueError("Ошибка целостности данных при обновлении профиля") from e
+            except SQLAlchemyError as e:
+                await session.rollback()
+                raise ValueError("Ошибка базы данных при обновлении профиля") from e
     
     @classmethod
     async def get_user_by_refresh_token(cls, refresh_token: str) -> UserOrm | None:

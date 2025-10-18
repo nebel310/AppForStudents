@@ -56,13 +56,14 @@ def custom_openapi():
     }
     
     secured_paths = {
-        # Авторизация
+        # Пользователи
         "/auth/me": {"method": "get", "security": [{"Bearer": []}]},
         "/auth/logout": {"method": "post", "security": [{"Bearer": []}]},
         "/auth/role": {"method": "patch", "security": [{"Bearer": []}]},
         "/auth/interests": {"method": "post", "security": [{"Bearer": []}]},
         "/auth/skills": {"method": "post", "security": [{"Bearer": []}]},
-        # Контент
+        "/auth/me": {"method": "patch", "security": [{"Bearer": []}]},
+        # Главная
         "/news/{news_id}/like": {"method": "post", "security": [{"Bearer": []}]},
         "/cases/{case_id}/participate": {"method": "post", "security": [{"Bearer": []}]},
         "/vacancies/{vacancy_id}/apply": {"method": "post", "security": [{"Bearer": []}]},
@@ -84,7 +85,7 @@ app.include_router(content_router)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://127.0.0.1:5500", "http://localhost:3000", "http://localhost:8080"],  # Адреса фронтенда
+    allow_origins=["http://127.0.0.1:5500", "http://localhost:3000", "http://localhost:8080"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

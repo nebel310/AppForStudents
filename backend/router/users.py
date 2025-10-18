@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from schemas.users import SUserRegister, SUserLogin, SUser, SUserRoleUpdate, SInterest, SSkill, SUserInterestsUpdate, SUserSkillsUpdate, SUserWithInterestsSkills
+from schemas.users import SUserRegister, SUserLogin, SUser, SUserRoleUpdate, SInterest, SSkill, SUserInterestsUpdate, SUserSkillsUpdate, SUserWithInterestsSkills, SUserProfile, SUserUpdate
 from repositories.users import UserRepository
 from models.users import UserOrm
 from utils.security import get_current_user, oauth2_scheme, create_access_token
@@ -73,10 +73,42 @@ async def logout(token: str = Depends(oauth2_scheme), current_user: UserOrm = De
         raise HTTPException(status_code=500, detail="Внутренняя ошибка сервера")
 
 
-@router.get("/me", response_model=SUser)
+@router.get("/me", response_model=SUserProfile)
 async def get_current_user_info(current_user: UserOrm = Depends(get_current_user)):
     try:
-        return SUser.model_validate(current_user)
+        profile_data = await UserRepository.get_user_profile_data(current_user.id)
+        
+        return SUserProfile(
+            id=profile_data["user"].id,
+            username=profile_data["user"].username,
+            email=profile_data["user"].email,
+            role=profile_data["user"].role,
+            created_at=profile_data["user"].created_at,
+            avatar_url=profile_data["user"].avatar_url,
+            rating=profile_data["user"].rating,
+            achievements=profile_data["achievements"],
+            skills=profile_data["skills"],
+            cases=profile_data["cases"],
+            clubs=profile_data["clubs"]
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Внутренняя ошибка сервера")
+
+
+@router.patch("/me", response_model=dict)
+async def update_user_profile(update_data: SUserUpdate, current_user: UserOrm = Depends(get_current_user)):
+    try:
+        user = await UserRepository.update_user_profile(current_user.id, update_data)
+        return {
+            "success": True,
+            "id": user.id,
+            "username": user.username,
+            "avatar_url": user.avatar_url
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail="Внутренняя ошибка сервера")
 

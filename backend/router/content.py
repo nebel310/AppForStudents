@@ -9,7 +9,7 @@ from utils.security import get_current_user
 
 router = APIRouter(
     prefix="",
-    tags=['Контент']
+    tags=['Главная']
 )
 
 

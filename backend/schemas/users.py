@@ -40,6 +40,20 @@ class SUser(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class SUserProfile(SUser):
+    avatar_url: Optional[str] = Field(None, example="https://example.com/avatar.jpg", description="URL аватара")
+    rating: float = Field(..., example=4.5, description="Рейтинг пользователя")
+    achievements: List[str] = Field(default=[], example=["Победитель хакатона", "Активный участник"], description="Достижения пользователя")
+    skills: List[str] = Field(default=[], example=["Python", "JavaScript"], description="Навыки пользователя")
+    cases: List[str] = Field(default=[], example=["Кейс 1", "Кейс 2"], description="Кейсы пользователя")
+    clubs: List[str] = Field(default=[], example=["Клуб разработчиков", "Клуб дизайнеров"], description="Клубы пользователя")
+
+
+class SUserUpdate(BaseModel):
+    username: Optional[str] = Field(None, min_length=3, max_length=50, example="new_username", description="Новое имя пользователя")
+    avatar_url: Optional[str] = Field(None, example="https://example.com/new_avatar.jpg", description="Новый URL аватара")
+
+
 class SUserRoleUpdate(BaseModel):
     role: UserRole = Field(..., example=UserRole.STUDENT, description="Новая роль пользователя")
 

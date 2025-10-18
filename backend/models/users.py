@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from sqlalchemy import ForeignKey, DateTime, String, Table, Column, Integer
+from sqlalchemy import ForeignKey, DateTime, String, Table, Column, Integer, Float
 from sqlalchemy.orm import Mapped, mapped_column
 from database import Model
 
@@ -14,6 +14,8 @@ class UserOrm(Model):
     email: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
     hashed_password: Mapped[str] = mapped_column(String(255))
     role: Mapped[str] = mapped_column(String(20), default='student')
+    avatar_url: Mapped[str] = mapped_column(String(255), nullable=True)
+    rating: Mapped[float] = mapped_column(Float, default=0.0)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
 
@@ -64,3 +66,12 @@ class UserSkillOrm(Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
     skill_id: Mapped[int] = mapped_column(ForeignKey('skills.id'))
+
+
+class UserAchievementOrm(Model):
+    __tablename__ = 'user_achievements'
+    
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'))
+    achievement: Mapped[str] = mapped_column(String(255), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
