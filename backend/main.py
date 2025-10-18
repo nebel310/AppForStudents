@@ -72,10 +72,18 @@ def custom_openapi():
         "/auth/interests": {"method": "post", "security": [{"Bearer": []}]},
         "/auth/skills": {"method": "post", "security": [{"Bearer": []}]},
         "/auth/update_me": {"method": "patch", "security": [{"Bearer": []}]},
-        # Главная
+        "/auth/update_profile": {"method": "patch", "security": [{"Bearer": []}]},
+        # Главная - пользовательские взаимодействия
         "/news/{news_id}/like": {"method": "post", "security": [{"Bearer": []}]},
         "/cases/{case_id}/participate": {"method": "post", "security": [{"Bearer": []}]},
         "/vacancies/{vacancy_id}/apply": {"method": "post", "security": [{"Bearer": []}]},
+        # Главная - рекрутерские эндпоинты
+        "/news": {"method": "post", "security": [{"Bearer": []}]},
+        "/news/{news_id}": {"method": "patch", "security": [{"Bearer": []}]},
+        "/cases": {"method": "post", "security": [{"Bearer": []}]},
+        "/cases/{case_id}": {"method": "patch", "security": [{"Bearer": []}]},
+        "/vacancies": {"method": "post", "security": [{"Bearer": []}]},
+        "/vacancies/{vacancy_id}": {"method": "patch", "security": [{"Bearer": []}]},
         # Клубы
         "/clubs": {"method": "post", "security": [{"Bearer": []}]},
         "/clubs/{club_id}/join": {"method": "post", "security": [{"Bearer": []}]},

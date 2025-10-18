@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from database import new_session
 from models.content import NewsOrm, NewsLikeOrm, CaseOrm, CaseParticipantOrm, VacancyOrm, VacancyApplicationOrm
-from schemas.content import SNewsCreate, SCaseCreate, SVacancyCreate
+from schemas.content import SNewsCreate, SCaseCreate, SVacancyCreate, SNewsUpdate, SCaseUpdate, SVacancyUpdate
 from sqlalchemy import select, delete, insert, update, func
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
@@ -447,3 +447,84 @@ class ContentRepository:
             except SQLAlchemyError as e:
                 await session.rollback()
                 raise ValueError(f"Ошибка при инициализации тестового контента: {str(e)}") from e
+    
+     # News methods - добавлены update методы
+    @classmethod
+    async def update_news(cls, news_id: int, update_data: SNewsUpdate) -> NewsOrm:
+        async with new_session() as session:
+            try:
+                query = select(NewsOrm).where(NewsOrm.id == news_id)
+                result = await session.execute(query)
+                news = result.scalars().first()
+                
+                if not news:
+                    raise ValueError("Новость не найдена")
+                
+                # Обновляем только переданные поля
+                update_dict = update_data.model_dump(exclude_unset=True)
+                for field, value in update_dict.items():
+                    setattr(news, field, value)
+                
+                await session.commit()
+                await session.refresh(news)
+                return news
+            except IntegrityError as e:
+                await session.rollback()
+                raise ValueError("Ошибка целостности данных при обновлении новости") from e
+            except SQLAlchemyError as e:
+                await session.rollback()
+                raise ValueError("Ошибка базы данных при обновлении новости") from e
+
+    # Case methods - добавлены update методы
+    @classmethod
+    async def update_case(cls, case_id: int, update_data: SCaseUpdate) -> CaseOrm:
+        async with new_session() as session:
+            try:
+                query = select(CaseOrm).where(CaseOrm.id == case_id)
+                result = await session.execute(query)
+                case = result.scalars().first()
+                
+                if not case:
+                    raise ValueError("Кейс не найден")
+                
+                # Обновляем только переданные поля
+                update_dict = update_data.model_dump(exclude_unset=True)
+                for field, value in update_dict.items():
+                    setattr(case, field, value)
+                
+                await session.commit()
+                await session.refresh(case)
+                return case
+            except IntegrityError as e:
+                await session.rollback()
+                raise ValueError("Ошибка целостности данных при обновлении кейса") from e
+            except SQLAlchemyError as e:
+                await session.rollback()
+                raise ValueError("Ошибка базы данных при обновлении кейса") from e
+
+    # Vacancy methods - добавлены update методы
+    @classmethod
+    async def update_vacancy(cls, vacancy_id: int, update_data: SVacancyUpdate) -> VacancyOrm:
+        async with new_session() as session:
+            try:
+                query = select(VacancyOrm).where(VacancyOrm.id == vacancy_id)
+                result = await session.execute(query)
+                vacancy = result.scalars().first()
+                
+                if not vacancy:
+                    raise ValueError("Вакансия не найдена")
+                
+                # Обновляем только переданные поля
+                update_dict = update_data.model_dump(exclude_unset=True)
+                for field, value in update_dict.items():
+                    setattr(vacancy, field, value)
+                
+                await session.commit()
+                await session.refresh(vacancy)
+                return vacancy
+            except IntegrityError as e:
+                await session.rollback()
+                raise ValueError("Ошибка целостности данных при обновлении вакансии") from e
+            except SQLAlchemyError as e:
+                await session.rollback()
+                raise ValueError("Ошибка базы данных при обновлении вакансии") from e

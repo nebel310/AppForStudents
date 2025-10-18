@@ -63,6 +63,14 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> UserOrm:
     return user
 
 
+async def get_current_recruiter(current_user: UserOrm = Depends(get_current_user)) -> UserOrm:
+    if current_user.role != "recruiter":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Недостаточно прав. Требуется роль рекрутера"
+        )
+    return current_user
+
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 

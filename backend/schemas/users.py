@@ -54,6 +54,12 @@ class SUserUpdate(BaseModel):
     avatar_url: Optional[str] = Field(None, example="https://example.com/new_avatar.jpg", description="Новый URL аватара")
 
 
+class SUserFullUpdate(BaseModel):
+    username: Optional[str] = Field(None, min_length=3, max_length=50, example="new_username", description="Новое имя пользователя")
+    email: Optional[EmailStr] = Field(None, example="new_email@example.com", description="Новый email")
+    avatar_url: Optional[str] = Field(None, example="https://example.com/new_avatar.jpg", description="Новый URL аватара")
+
+
 class SUserRoleUpdate(BaseModel):
     role: UserRole = Field(..., example=UserRole.STUDENT, description="Новая роль пользователя")
 

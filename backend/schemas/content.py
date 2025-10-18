@@ -9,8 +9,8 @@ class SNewsBase(BaseModel):
     title: str = Field(..., min_length=1, max_length=100, example="Новая конференция по AI", description="Заголовок новости")
     author: str = Field(..., min_length=1, max_length=100, example="Компания Яндекс", description="Автор новости")
     main_text: str = Field(..., example="Текст новости...", description="Основной текст новости")
-    image_url1: Optional[str] = Field(None, example="http://example.com/image1.jpg", description="URL первого изображения")
-    image_url2: Optional[str] = Field(None, example="http://example.com/image2.jpg", description="URL второго изображения")
+    image_url1: Optional[str] = Field(None, example="https://example.com/image1.jpg", description="URL первого изображения")
+    image_url2: Optional[str] = Field(None, example="https://example.com/image2.jpg", description="URL второго изображения")
     start_date: datetime = Field(..., example="2024-01-01T10:00:00Z", description="Дата и время начала")
     end_date: datetime = Field(..., example="2024-01-01T18:00:00Z", description="Дата и время окончания")
     address: str = Field(..., example="Москва, ул. Примерная, 1", description="Адрес проведения")
@@ -18,6 +18,17 @@ class SNewsBase(BaseModel):
 
 class SNewsCreate(SNewsBase):
     pass
+
+
+class SNewsUpdate(BaseModel):
+    title: Optional[str] = Field(None, min_length=1, max_length=100, example="Обновленный заголовок")
+    author: Optional[str] = Field(None, min_length=1, max_length=100, example="Новый автор")
+    main_text: Optional[str] = Field(None, example="Обновленный текст...")
+    image_url1: Optional[str] = Field(None, example="https://example.com/new_image1.jpg")
+    image_url2: Optional[str] = Field(None, example="https://example.com/new_image2.jpg")
+    start_date: Optional[datetime] = Field(None, example="2024-01-02T10:00:00Z")
+    end_date: Optional[datetime] = Field(None, example="2024-01-02T18:00:00Z")
+    address: Optional[str] = Field(None, example="Новый адрес")
 
 
 class SNews(SNewsBase):
@@ -32,8 +43,8 @@ class SCaseBase(BaseModel):
     title: str = Field(..., min_length=1, max_length=100, example="Кейс по разработке мобильного приложения", description="Название кейса")
     author: str = Field(..., min_length=1, max_length=100, example="Компания VK", description="Автор кейса")
     main_text: str = Field(..., example="Описание кейса...", description="Основной текст кейса")
-    image_url1: Optional[str] = Field(None, example="http://example.com/image1.jpg", description="URL первого изображения")
-    image_url2: Optional[str] = Field(None, example="http://example.com/image2.jpg", description="URL второго изображения")
+    image_url1: Optional[str] = Field(None, example="https://example.com/image1.jpg", description="URL первого изображения")
+    image_url2: Optional[str] = Field(None, example="https://example.com/image2.jpg", description="URL второго изображения")
     start_date: datetime = Field(..., example="2024-01-01T10:00:00Z", description="Дата и время начала")
     end_date: datetime = Field(..., example="2024-01-01T18:00:00Z", description="Дата и время окончания")
     address: str = Field(..., example="Москва, ул. Примерная, 1", description="Адрес проведения")
@@ -42,6 +53,18 @@ class SCaseBase(BaseModel):
 
 class SCaseCreate(SCaseBase):
     pass
+
+
+class SCaseUpdate(BaseModel):
+    title: Optional[str] = Field(None, min_length=1, max_length=100, example="Обновленное название кейса")
+    author: Optional[str] = Field(None, min_length=1, max_length=100, example="Новый автор")
+    main_text: Optional[str] = Field(None, example="Обновленное описание...")
+    image_url1: Optional[str] = Field(None, example="https://example.com/new_image1.jpg")
+    image_url2: Optional[str] = Field(None, example="https://example.com/new_image2.jpg")
+    start_date: Optional[datetime] = Field(None, example="2024-01-02T10:00:00Z")
+    end_date: Optional[datetime] = Field(None, example="2024-01-02T18:00:00Z")
+    address: Optional[str] = Field(None, example="Новый адрес")
+    tags: Optional[str] = Field(None, example="новые, теги")
 
 
 class SCase(SCaseBase):
@@ -56,13 +79,22 @@ class SVacancyBase(BaseModel):
     title: str = Field(..., min_length=1, max_length=100, example="Стажер-разработчик Python", description="Название вакансии")
     author: str = Field(..., min_length=1, max_length=100, example="Компания Тинькофф", description="Автор вакансии")
     main_text: str = Field(..., example="Описание вакансии...", description="Основной текст вакансии")
-    image_url1: Optional[str] = Field(None, example="http://example.com/image1.jpg", description="URL первого изображения")
-    image_url2: Optional[str] = Field(None, example="http://example.com/image2.jpg", description="URL второго изображения")
+    image_url1: Optional[str] = Field(None, example="https://example.com/image1.jpg", description="URL первого изображения")
+    image_url2: Optional[str] = Field(None, example="https://example.com/image2.jpg", description="URL второго изображения")
     tags: Optional[str] = Field(None, example="python, django, postgresql", description="Теги вакансии")
 
 
 class SVacancyCreate(SVacancyBase):
     pass
+
+
+class SVacancyUpdate(BaseModel):
+    title: Optional[str] = Field(None, min_length=1, max_length=100, example="Обновленная вакансия")
+    author: Optional[str] = Field(None, min_length=1, max_length=100, example="Новый автор")
+    main_text: Optional[str] = Field(None, example="Обновленное описание...")
+    image_url1: Optional[str] = Field(None, example="https://example.com/new_image1.jpg")
+    image_url2: Optional[str] = Field(None, example="https://example.com/new_image2.jpg")
+    tags: Optional[str] = Field(None, example="новые, теги")
 
 
 class SVacancy(SVacancyBase):
@@ -85,3 +117,9 @@ class SApplicationResponse(BaseModel):
 class SLikeResponse(BaseModel):
     success: bool = Field(..., example=True, description="Успех операции")
     likes_count: int = Field(..., example=6, description="Новое количество лайков")
+
+
+class SContentCreateResponse(BaseModel):
+    id: int = Field(..., example=1, description="ID созданного контента")
+    title: str = Field(..., example="Название", description="Название контента")
+    success: bool = Field(..., example=True, description="Успех операции")

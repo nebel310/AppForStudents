@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from database import new_session
 from models.users import UserOrm, RefreshTokenOrm, BlacklistedTokenOrm, InterestOrm, SkillOrm, UserInterestOrm, UserSkillOrm, UserAchievementOrm
 from models.content import CaseOrm, CaseParticipantOrm
-from schemas.users import SUserRegister, SUserRoleUpdate, SUserInterestsUpdate, SUserSkillsUpdate, SUserUpdate
+from schemas.users import SUserRegister, SUserRoleUpdate, SUserInterestsUpdate, SUserSkillsUpdate, SUserUpdate, SUserFullUpdate
 from sqlalchemy import select, delete, insert, update
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from passlib.context import CryptContext
@@ -423,3 +423,37 @@ class UserRepository:
             except SQLAlchemyError as e:
                 await session.rollback()
                 raise ValueError(f"Ошибка при инициализации интересов и навыков: {str(e)}") from e
+
+    @classmethod
+    async def update_full_profile(cls, user_id: int, update_data: SUserFullUpdate) -> UserOrm:
+        async with new_session() as session:
+            try:
+                query = select(UserOrm).where(UserOrm.id == user_id)
+                result = await session.execute(query)
+                user = result.scalars().first()
+                
+                if not user:
+                    raise ValueError("Пользователь не найден")
+                
+                # Проверяем email на уникальность, если он обновляется
+                if update_data.email is not None and update_data.email != user.email:
+                    email_query = select(UserOrm).where(UserOrm.email == update_data.email)
+                    email_result = await session.execute(email_query)
+                    existing_user = email_result.scalars().first()
+                    if existing_user:
+                        raise ValueError("Пользователь с таким email уже существует")
+                
+                # Обновляем только переданные поля
+                update_dict = update_data.model_dump(exclude_unset=True)
+                for field, value in update_dict.items():
+                    setattr(user, field, value)
+                
+                await session.commit()
+                await session.refresh(user)
+                return user
+            except IntegrityError as e:
+                await session.rollback()
+                raise ValueError("Ошибка целостности данных при обновлении профиля") from e
+            except SQLAlchemyError as e:
+                await session.rollback()
+                raise ValueError("Ошибка базы данных при обновлении профиля") from e
