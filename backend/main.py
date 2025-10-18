@@ -62,7 +62,7 @@ def custom_openapi():
         "/auth/role": {"method": "patch", "security": [{"Bearer": []}]},
         "/auth/interests": {"method": "post", "security": [{"Bearer": []}]},
         "/auth/skills": {"method": "post", "security": [{"Bearer": []}]},
-        "/auth/me": {"method": "patch", "security": [{"Bearer": []}]},
+        "/auth/update_me": {"method": "patch", "security": [{"Bearer": []}]},
         # Главная
         "/news/{news_id}/like": {"method": "post", "security": [{"Bearer": []}]},
         "/cases/{case_id}/participate": {"method": "post", "security": [{"Bearer": []}]},
