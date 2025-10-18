@@ -288,25 +288,38 @@ class UserRepository:
                 interests = [
                     "Программирование", "Дизайн", "Маркетинг", "Аналитика", 
                     "Управление", "Искусственный интеллект", "Data Science",
-                    "Веб-разработка", "Мобильная разработка", "Кибербезопасность"
+                    "Веб-разработка", "Мобильная разработка", "Кибербезопасность",
+                    "DevOps", "UI/UX дизайн", "Продукт-менеджмент", "Бизнес-анализ",
+                    "Машинное обучение", "Блокчейн", "Cloud computing"
                 ]
                 
                 for interest_name in interests:
-                    interest = InterestOrm(name=interest_name)
-                    session.add(interest)
+                    # Проверяем, существует ли уже такой интерес
+                    existing_query = select(InterestOrm).where(InterestOrm.name == interest_name)
+                    result = await session.execute(existing_query)
+                    if not result.scalars().first():
+                        interest = InterestOrm(name=interest_name)
+                        session.add(interest)
                 
                 # Базовые навыки
                 skills = [
                     "Python", "JavaScript", "Java", "C++", "SQL", "HTML/CSS",
                     "React", "Vue.js", "Django", "FastAPI", "Docker", "Git",
-                    "Photoshop", "Figma", "Excel", "PowerPoint", "Английский язык"
+                    "Photoshop", "Figma", "Excel", "PowerPoint", "Английский язык",
+                    "TypeScript", "Node.js", "PostgreSQL", "MongoDB", "Redis",
+                    "Kubernetes", "AWS", "Azure", "Google Cloud", "TensorFlow",
+                    "PyTorch", "Pandas", "NumPy", "Scikit-learn"
                 ]
                 
                 for skill_name in skills:
-                    skill = SkillOrm(name=skill_name)
-                    session.add(skill)
+                    existing_query = select(SkillOrm).where(SkillOrm.name == skill_name)
+                    result = await session.execute(existing_query)
+                    if not result.scalars().first():
+                        skill = SkillOrm(name=skill_name)
+                        session.add(skill)
                 
                 await session.commit()
+                print("Базовые интересы и навыки успешно созданы")
             except SQLAlchemyError as e:
                 await session.rollback()
-                raise ValueError("Ошибка при инициализации интересов и навыков") from e
+                raise ValueError(f"Ошибка при инициализации интересов и навыков: {str(e)}") from e

@@ -5,7 +5,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from database import create_tables, delete_tables
 from router.users import router as users_router
+from router.content import router as content_router
 from repositories.users import UserRepository
+from repositories.content import ContentRepository
 from schemas.users import SUserRegister
 
 
@@ -25,6 +27,13 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         print(f'Ошибка при инициализации интересов и навыков: {e}')
     
+    # Инициализируем тестовый контент
+    try:
+        await ContentRepository.init_test_content()
+        print('Тестовый контент добавлен')
+    except Exception as e:
+        print(f'Ошибка при инициализации тестового контента: {e}')
+    
     yield
     print('Выключение')
 
@@ -33,9 +42,9 @@ def custom_openapi():
     if app.openapi_schema:
         return app.openapi_schema
     openapi_schema = get_openapi(
-        title="Your App",
+        title="CareerHub API",
         version="1.0.0",
-        description="Base nebel's FastApi template with JWT Auth",
+        description="API для платформы карьерного развития студентов и рекрутеров",
         routes=app.routes,
     )
     openapi_schema["components"]["securitySchemes"] = {
@@ -53,6 +62,10 @@ def custom_openapi():
         "/auth/role": {"method": "patch", "security": [{"Bearer": []}]},
         "/auth/interests": {"method": "post", "security": [{"Bearer": []}]},
         "/auth/skills": {"method": "post", "security": [{"Bearer": []}]},
+        # Контент
+        "/news/{news_id}/like": {"method": "post", "security": [{"Bearer": []}]},
+        "/cases/{case_id}/participate": {"method": "post", "security": [{"Bearer": []}]},
+        "/vacancies/{vacancy_id}/apply": {"method": "post", "security": [{"Bearer": []}]},
     }
     
     for path, config in secured_paths.items():
@@ -66,11 +79,12 @@ def custom_openapi():
 app = FastAPI(lifespan=lifespan)
 app.openapi = custom_openapi
 app.include_router(users_router)
+app.include_router(content_router)
 
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://127.0.0.1:5500"],  # Тут адрес фронтенда
+    allow_origins=["http://127.0.0.1:5500", "http://localhost:3000", "http://localhost:8080"],  # Адреса фронтенда
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
